@@ -38,7 +38,6 @@ fun ForgotPasswordSuccessScreen(navController: NavController) {
         contentAlignment = Alignment.Center
     ) {
         Image(
-            // Menggunakan resource dari 'learnexus'
             painter = painterResource(id = R.drawable.bg_sukses),
             contentDescription = "Background",
             modifier = Modifier.fillMaxSize(),
@@ -64,7 +63,6 @@ fun ForgotPasswordSuccessScreen(navController: NavController) {
             Spacer(modifier = Modifier.height(34.dp))
 
             Text(
-                // Teks diubah sedikit
                 text = "Berhasil Mengganti Kata Sandi",
                 fontSize = 25.sp,
                 fontFamily = PoppinsFontFamily,
@@ -79,7 +77,6 @@ fun ForgotPasswordSuccessScreen(navController: NavController) {
             Spacer(modifier = Modifier.height(178.dp))
 
             Button(
-                // Navigasi diubah ke "login"
                 onClick = {
                     navController.navigate("login") {
                         popUpTo(navController.graph.findStartDestination().id) {
@@ -96,7 +93,6 @@ fun ForgotPasswordSuccessScreen(navController: NavController) {
                 colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF151E11))
             ) {
                 Text(
-                    // Teks tombol diubah
                     text = "Kembali ke Login",
                     color = Color.White,
                     fontSize = 17.sp,

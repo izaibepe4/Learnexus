@@ -27,18 +27,17 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.compose.rememberNavController
-import com.example.learnexus.R // Import R dari package learnexus
-import com.example.learnexus.ui.theme.PoppinsFontFamily // Import Font dari package learnexus
-
+import com.example.learnexus.R
+import com.example.learnexus.ui.theme.PoppinsFontFamily
 @Composable
-fun RegisterSuccessScreen(navController: NavController) { // <-- PERUBAHAN DI SINI
+fun RegisterSuccessScreen(navController: NavController) {
     Box(
         modifier = Modifier.fillMaxSize(),
         contentAlignment = Alignment.Center
     ) {
         // Background
         Image(
-            painter = painterResource(id = R.drawable.bg_sukses), // Pastikan bg_sukses ada di drawable
+            painter = painterResource(id = R.drawable.bg_sukses),
             contentDescription = "Background",
             modifier = Modifier.fillMaxSize(),
             contentScale = ContentScale.Crop
@@ -53,7 +52,7 @@ fun RegisterSuccessScreen(navController: NavController) { // <-- PERUBAHAN DI SI
             Spacer(modifier = Modifier.height(300.dp))
 
             Image(
-                painter = painterResource(id = R.drawable.ic_check), // Pastikan ic_check ada di drawable
+                painter = painterResource(id = R.drawable.ic_check),
                 contentDescription = "Berhasil Buat Akun",
                 modifier = Modifier.size(117.dp)
             )
@@ -81,9 +80,9 @@ fun RegisterSuccessScreen(navController: NavController) { // <-- PERUBAHAN DI SI
             Spacer(modifier = Modifier.height(226.dp))
 
             Button(
-                // PERUBAHAN: Navigasi ke "login" dan bersihkan back stack
+
                 onClick = {
-                    navController.navigate("login") { // Ganti "login" dengan rute layar Login Anda
+                    navController.navigate("login") {
                         popUpTo(navController.graph.findStartDestination().id) {
                             inclusive = true
                         }
@@ -110,6 +109,6 @@ fun RegisterSuccessScreen(navController: NavController) { // <-- PERUBAHAN DI SI
 
 @Preview
 @Composable
-fun PreviewRegisterSuccessScreen() { // <-- PERUBAHAN DI SINI
+fun PreviewRegisterSuccessScreen() {
     RegisterSuccessScreen(navController = rememberNavController())
 }

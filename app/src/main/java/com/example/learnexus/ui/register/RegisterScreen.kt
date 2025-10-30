@@ -290,10 +290,9 @@ fun RegisterForm(navController: NavController) {
         Spacer(modifier = Modifier.height(16.dp))
 
         Button(
-            // *** PERUBAHAN DI SINI ***
+
             onClick = {
-                // Navigasi ke layar sukses setelah daftar
-                // Pastikan "akun_berhasil" adalah nama rute yang benar di NavGraph Anda
+
                 navController.navigate("akun_berhasil")
             },
             modifier = Modifier

@@ -85,7 +85,7 @@ fun ForgotPasswordScreen(navController: NavController) { // <-- PERUBAHAN NAMA F
 
         Spacer(modifier = Modifier.height(35.dp))
 
-        // Judul
+
         Text(
             text = "Atur Ulang Kata Sandi",
             fontSize = 30.sp,
@@ -94,7 +94,7 @@ fun ForgotPasswordScreen(navController: NavController) { // <-- PERUBAHAN NAMA F
             color = Color(0xFF27361F)
         )
 
-        // Sub-Judul dari UI
+
         Text(
             text = "Masukkan email dan kata sandi baru untuk masuk ke akun anda",
             fontSize = 14.sp,
@@ -172,10 +172,10 @@ fun ForgotPasswordScreen(navController: NavController) { // <-- PERUBAHAN NAMA F
 
         Spacer(modifier = Modifier.height(47.dp))
 
-        // Tombol Ubah Kata Sandi
+
         val isButtonEnabled = email.isNotEmpty() && newPassword.isNotEmpty() && confirmPassword.isNotEmpty() && !isPasswordMismatch
         Button(
-            // <-- PERUBAHAN NAVIGASI
+
             onClick = { navController.navigate("lupa_sandi_berhasil") },
             enabled = isButtonEnabled,
             modifier = Modifier
@@ -224,7 +224,7 @@ fun PasswordTextField(
         visualTransformation = if (isPasswordVisible) VisualTransformation.None else PasswordVisualTransformation(),
         leadingIcon = {
             Icon(
-                imageVector = Icons.Filled.Lock, // Menggunakan ikon Material
+                imageVector = Icons.Filled.Lock,
                 contentDescription = "Password Icon",
                 modifier = Modifier.size(18.dp)
             )
@@ -249,9 +249,9 @@ fun PasswordTextField(
 
 @Preview(showBackground = true)
 @Composable
-fun PreviewForgotPasswordScreen() { // <-- PERUBAHAN NAMA PREVIEW
-    // Anda mungkin perlu membungkus ini dengan Tema aplikasi Anda
+fun PreviewForgotPasswordScreen() {
+
     // LearnNexusTheme {
-    ForgotPasswordScreen(navController = rememberNavController()) // <-- PERUBAHAN NAMA FUNGSI
+    ForgotPasswordScreen(navController = rememberNavController())
     // }
 }
