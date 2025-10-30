@@ -8,6 +8,7 @@ import com.example.learnexus.ui.home.HomeScreen
 import com.example.learnexus.ui.forgotpassword.ForgotPasswordScreen
 import com.example.learnexus.ui.forgotpassword.ForgotPasswordSuccessScreen
 import com.example.learnexus.ui.login.LoginScreen
+import com.example.learnexus.ui.profil.ProfileScreen
 import com.example.learnexus.ui.register.RegisterScreen
 import com.example.learnexus.ui.register.RegisterSuccessScreen
 @Composable
