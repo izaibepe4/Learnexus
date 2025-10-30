@@ -136,7 +136,7 @@ fun HeaderSection() {
      Column(modifier = Modifier.padding(16.dp)) {
          Text(
              "Daftarkan Diri Anda",
-             color = Color.Green,
+             color = Color.Black,
              fontSize = 25.sp,
              fontFamily = PoppinsFontFamily,
              fontWeight = FontWeight.Bold,
