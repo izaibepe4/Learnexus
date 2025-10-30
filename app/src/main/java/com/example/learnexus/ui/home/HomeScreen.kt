@@ -18,7 +18,7 @@ fun HomeScreen(navController: NavController) {
     Spacer(modifier = Modifier.height(47.dp))
 
     Text(
-        "Ini homescreen",
+        "Ini homescreen!!",
         color = Color.Black,
         fontSize = 14.sp,
         fontFamily = PoppinsFontFamily,
