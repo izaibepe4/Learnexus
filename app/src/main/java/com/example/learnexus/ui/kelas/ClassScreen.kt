@@ -1,4 +1,4 @@
-package com.example.learnexus.ui.home
+package com.example.learnexus.ui.kelas
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -19,7 +19,7 @@ import com.example.learnexus.ui.components.BottomNavigationBar
 import com.example.learnexus.ui.theme.PoppinsFontFamily
 
 @Composable
-fun HomeScreen(navController: NavController) {
+fun ClassScreen(navController: NavController) {
     Scaffold(
         bottomBar = {
             BottomNavigationBar(navController = navController)
@@ -31,15 +31,15 @@ fun HomeScreen(navController: NavController) {
                 .verticalScroll(rememberScrollState())
         ) {
             Spacer(modifier = Modifier.height(47.dp))
+
             Text(
-                "Ini homescreen",
+                "Ini Kelas",
                 color = Color.Black,
                 fontSize = 20.sp,
                 fontFamily = PoppinsFontFamily,
                 fontWeight = FontWeight.Normal
             )
         }
-
-
     }
+
 }
