@@ -5,6 +5,8 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.learnexus.ui.home.HomeScreen
+import com.example.learnexus.ui.kelas.ClassScreen
+import com.example.learnexus.ui.leaderboard.LeaderboardScreen
 import com.example.learnexus.ui.forgotpassword.ForgotPasswordScreen
 import com.example.learnexus.ui.forgotpassword.ForgotPasswordSuccessScreen
 import com.example.learnexus.ui.login.LoginScreen
@@ -32,7 +34,17 @@ fun AppNavigation() {
         composable("home") {
             HomeScreen(navController)
         }
+        composable("kelas") {
+            ClassScreen(navController)
+        }
 
+        composable("leaderboard") {
+            LeaderboardScreen(navController)
+        }
+
+        composable("profile") {
+            ProfileScreen(navController)
+        }
         composable("lupa sandi") {
             ForgotPasswordScreen(navController)
         }
