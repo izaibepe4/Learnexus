@@ -5,10 +5,11 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.learnexus.ui.home.HomeScreen
-import com.example.learnexus.ui.forgotpassword.ForgotPassword
+import com.example.learnexus.ui.forgotpassword.ForgotPasswordScreen
+import com.example.learnexus.ui.forgotpassword.ForgotPasswordSuccessScreen
 import com.example.learnexus.ui.login.LoginScreen
 import com.example.learnexus.ui.register.RegisterScreen
-
+import com.example.learnexus.ui.register.RegisterSuccessScreen
 @Composable
 fun AppNavigation() {
     val navController = rememberNavController()
@@ -24,14 +25,21 @@ fun AppNavigation() {
         composable("register") {
             RegisterScreen(navController)
         }
-
+        composable("akun_berhasil") {
+            RegisterSuccessScreen(navController)
+        }
         composable("home") {
             HomeScreen(navController)
         }
 
         composable("lupa sandi") {
-            ForgotPassword(navController)
+            ForgotPasswordScreen(navController)
         }
+
+        composable("lupa_sandi_berhasil") {
+            ForgotPasswordSuccessScreen(navController)
+        }
+
 
     }
 }
