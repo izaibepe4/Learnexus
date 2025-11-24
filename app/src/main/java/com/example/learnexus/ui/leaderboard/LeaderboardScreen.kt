@@ -1,4 +1,4 @@
-package com.example.learnexus.ui.home
+package com.example.learnexus.ui.leaderboard
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -19,7 +19,7 @@ import com.example.learnexus.ui.components.BottomNavigationBar
 import com.example.learnexus.ui.theme.PoppinsFontFamily
 
 @Composable
-fun HomeScreen(navController: NavController) {
+fun LeaderboardScreen(navController: NavController) {
     Scaffold(
         bottomBar = {
             BottomNavigationBar(navController = navController)
@@ -32,14 +32,13 @@ fun HomeScreen(navController: NavController) {
         ) {
             Spacer(modifier = Modifier.height(47.dp))
             Text(
-                "Ini homescreen",
+                "Ini Leaderboard",
                 color = Color.Black,
                 fontSize = 20.sp,
                 fontFamily = PoppinsFontFamily,
                 fontWeight = FontWeight.Normal
             )
+
         }
-
-
     }
 }

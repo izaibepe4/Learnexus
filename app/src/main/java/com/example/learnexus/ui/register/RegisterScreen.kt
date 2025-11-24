@@ -108,233 +108,237 @@ fun HeaderSection() {
         contentScale = ContentScale.Crop
     )
 }
- @Composable
- fun RegisterForm(navController: NavController) {
-     var name by remember { mutableStateOf("") }
-     var email by remember { mutableStateOf("") }
-     var isEmailValid by remember { mutableStateOf(true) }
-     var password by remember { mutableStateOf("") }
-     var isPasswordValid by remember { mutableStateOf(true) }
-     var passwordVisible by remember { mutableStateOf(false) }
-     var isChecked by remember { mutableStateOf(false) }
+@Composable
+fun RegisterForm(navController: NavController) {
+    var name by remember { mutableStateOf("") }
+    var email by remember { mutableStateOf("") }
+    var isEmailValid by remember { mutableStateOf(true) }
+    var password by remember { mutableStateOf("") }
+    var isPasswordValid by remember { mutableStateOf(true) }
+    var passwordVisible by remember { mutableStateOf(false) }
+    var isChecked by remember { mutableStateOf(false) }
 
-     val annotatedString = buildAnnotatedString {
-         append("Dengan melakukan login atau registrasi, Anda menyetujui ")
+    val annotatedString = buildAnnotatedString {
+        append("Dengan melakukan login atau registrasi, Anda menyetujui ")
 
-         withStyle(style = SpanStyle(fontWeight = FontWeight.Bold, fontFamily = PoppinsFontFamily)) {
-             append("Syarat & Ketentuan")
-         }
+        withStyle(style = SpanStyle(fontWeight = FontWeight.Bold, fontFamily = PoppinsFontFamily)) {
+            append("Syarat & Ketentuan")
+        }
 
-         append(" serta ")
+        append(" serta ")
 
-         withStyle(style = SpanStyle(fontWeight = FontWeight.Bold, fontFamily = PoppinsFontFamily)) {
-             append("Kebijakan Privasi")
-         }
-     }
-     val isFormValid = name.isNotBlank() && email.isNotBlank() && isEmailValid && password.isNotBlank() && isPasswordValid && isChecked
+        withStyle(style = SpanStyle(fontWeight = FontWeight.Bold, fontFamily = PoppinsFontFamily)) {
+            append("Kebijakan Privasi")
+        }
+    }
+    val isFormValid = name.isNotBlank() && email.isNotBlank() && isEmailValid && password.isNotBlank() && isPasswordValid && isChecked
 
-     Column(modifier = Modifier.padding(16.dp)) {
-         Text(
-             "Daftarkan Diri Anda",
-             color = Color.Black,
-             fontSize = 25.sp,
-             fontFamily = PoppinsFontFamily,
-             fontWeight = FontWeight.Bold,
-             textAlign = TextAlign.Center,
-             modifier = Modifier.fillMaxWidth()
-         )
+    Column(modifier = Modifier.padding(16.dp)) {
+        Text(
+            "Daftarkan Diri Anda",
+            color = Color.Black,
+            fontSize = 25.sp,
+            fontFamily = PoppinsFontFamily,
+            fontWeight = FontWeight.Bold,
+            textAlign = TextAlign.Center,
+            modifier = Modifier.fillMaxWidth()
+        )
 
-         Spacer(modifier = Modifier.height(15.dp))
+        Spacer(modifier = Modifier.height(15.dp))
 
-         // nama pic
-         OutlinedTextField(
-             value = name,
-             onValueChange = { name = it },
-             label = {
-                 Text(
-                     "Nama",
-                     color = Color(0xFF686868),
-                     fontFamily = PoppinsFontFamily,
-                     fontWeight = FontWeight.Normal,
-                     fontSize = 14.sp,
-                 ) },
-             leadingIcon = {
-                 Icon(
-                     painter = painterResource(id = R.drawable.ic_person),
-                     modifier = Modifier.size(20.dp),
-                     contentDescription = "Name Icon"
-                 )
-             },
-             modifier = Modifier
-                 .fillMaxWidth()
-                 .height(55.dp),
-             shape = RoundedCornerShape(15.dp),
-             singleLine = true
-         )
+        // nama pic
+        OutlinedTextField(
+            value = name,
+            onValueChange = { name = it },
+            label = {
+                Text(
+                    "Nama",
+                    color = Color(0xFF686868),
+                    fontFamily = PoppinsFontFamily,
+                    fontWeight = FontWeight.Normal,
+                    fontSize = 14.sp,
+                ) },
+            leadingIcon = {
+                Icon(
+                    painter = painterResource(id = R.drawable.ic_person),
+                    modifier = Modifier.size(20.dp),
+                    contentDescription = "Name Icon"
+                )
+            },
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(55.dp),
+            shape = RoundedCornerShape(15.dp),
+            singleLine = true
+        )
 
-         Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(16.dp))
 
-         // email pic (using same as company email)
-         OutlinedTextField(
-             value = email,
-             onValueChange = {
-                 email = it
-                 isEmailValid = it.contains("@")
-             },
-             label = {
-                 Text(
-                     "Email",
-                     color = Color(0xFF686868),
-                     fontFamily = PoppinsFontFamily,
-                     fontWeight = FontWeight.Normal,
-                 )
-             },
-             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
-             leadingIcon = {
-                 Icon(
-                     painter = painterResource(id = R.drawable.ic_email),
-                     modifier = Modifier.size(20.dp),
-                     contentDescription = "Email Icon"
-                 )
-             },
-             modifier = Modifier
-                 .fillMaxWidth()
-                 .height(60.dp),
-             shape = RoundedCornerShape(15.dp),
-             singleLine = true,
-         )
+        // email pic (using same as company email)
+        OutlinedTextField(
+            value = email,
+            onValueChange = {
+                email = it
+                isEmailValid = it.contains("@")
+            },
+            label = {
+                Text(
+                    "Email",
+                    color = Color(0xFF686868),
+                    fontFamily = PoppinsFontFamily,
+                    fontWeight = FontWeight.Normal,
+                )
+            },
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
+            leadingIcon = {
+                Icon(
+                    painter = painterResource(id = R.drawable.ic_email),
+                    modifier = Modifier.size(20.dp),
+                    contentDescription = "Email Icon"
+                )
+            },
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(60.dp),
+            shape = RoundedCornerShape(15.dp),
+            singleLine = true,
+        )
 
-         if (!isEmailValid) {
-             Text(
-                 text = "Email tidak boleh kosong dan harus mengandung @",
-                 color = Color.Red,
-                 fontSize = 14.sp,
-                 fontFamily = PoppinsFontFamily,
-                 modifier = Modifier
-                     .padding(top = 4.dp)
-                     .align(Alignment.Start)
-             )
-         }
+        if (!isEmailValid) {
+            Text(
+                text = "Email tidak boleh kosong dan harus mengandung @",
+                color = Color.Red,
+                fontSize = 14.sp,
+                fontFamily = PoppinsFontFamily,
+                modifier = Modifier
+                    .padding(top = 4.dp)
+                    .align(Alignment.Start)
+            )
+        }
 
-         Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(16.dp))
 
-         // password pic
-         OutlinedTextField(
-             value = password,
-             onValueChange = {
-                 password = it
-                 isPasswordValid = it.length >= 8
-             },
-             label = {
-                 Text(
-                     "Kata Sandi",
-                     color = Color(0xFF686868),
-                     fontFamily = PoppinsFontFamily,
-                     fontWeight = FontWeight.Normal
-                 )
-             },
-             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
-             visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
-             leadingIcon = {
-                 Icon(
-                     painter = painterResource(id = R.drawable.ic_password),
-                     modifier = Modifier.size(18.dp),
-                     contentDescription = "Password Icon"
-                 )
-             },
-             trailingIcon = {
-                 IconButton(onClick = { passwordVisible = !passwordVisible }) {
-                     Icon(
-                         painter = painterResource(id = if (passwordVisible) R.drawable.ic_visibility else R.drawable.ic_visibility_off),
-                         contentDescription = if (passwordVisible) "Hide password" else "Show password",
-                         modifier = Modifier.size(20.dp)
-                     )
-                 }
-             },
-             modifier = Modifier
-                 .fillMaxWidth()
-                 .height(60.dp),
-             shape = RoundedCornerShape(15.dp),
-             singleLine = true
-         )
+        // password pic
+        OutlinedTextField(
+            value = password,
+            onValueChange = {
+                password = it
+                isPasswordValid = it.length >= 8
+            },
+            label = {
+                Text(
+                    "Kata Sandi",
+                    color = Color(0xFF686868),
+                    fontFamily = PoppinsFontFamily,
+                    fontWeight = FontWeight.Normal
+                )
+            },
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
+            visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
+            leadingIcon = {
+                Icon(
+                    painter = painterResource(id = R.drawable.ic_password),
+                    modifier = Modifier.size(18.dp),
+                    contentDescription = "Password Icon"
+                )
+            },
+            trailingIcon = {
+                IconButton(onClick = { passwordVisible = !passwordVisible }) {
+                    Icon(
+                        painter = painterResource(id = if (passwordVisible) R.drawable.ic_visibility else R.drawable.ic_visibility_off),
+                        contentDescription = if (passwordVisible) "Hide password" else "Show password",
+                        modifier = Modifier.size(20.dp)
+                    )
+                }
+            },
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(60.dp),
+            shape = RoundedCornerShape(15.dp),
+            singleLine = true
+        )
 
-         // Menampilkan warning jika password kurang dari 8 karakter
-         if (!isPasswordValid) {
-             Text(
-                 text = "Minimal 8 karakter",
-                 color = Color.Red,
-                 fontSize = 14.sp,
-                 fontFamily = PoppinsFontFamily,
-                 modifier = Modifier
-                     .padding(top = 4.dp)
-                     .align(Alignment.Start)
-             )
-         }
+        // Menampilkan warning jika password kurang dari 8 karakter
+        if (!isPasswordValid) {
+            Text(
+                text = "Minimal 8 karakter",
+                color = Color.Red,
+                fontSize = 14.sp,
+                fontFamily = PoppinsFontFamily,
+                modifier = Modifier
+                    .padding(top = 4.dp)
+                    .align(Alignment.Start)
+            )
+        }
 
-         Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(16.dp))
 
-         Row(verticalAlignment = Alignment.CenterVertically) {
-             Checkbox(
-                 checked = isChecked,
-                 onCheckedChange = { isChecked = it }
-             )
-             Text(
-                 text = annotatedString,
-                 fontSize = 12.sp,
-                 color = Color.Black,
-                 fontFamily = PoppinsFontFamily,
-                 fontWeight = FontWeight.Normal
-             )
-         }
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Checkbox(
+                checked = isChecked,
+                onCheckedChange = { isChecked = it }
+            )
+            Text(
+                text = annotatedString,
+                fontSize = 12.sp,
+                color = Color.Black,
+                fontFamily = PoppinsFontFamily,
+                fontWeight = FontWeight.Normal
+            )
+        }
 
-         Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(16.dp))
 
-         Button(
-             onClick = { navController.navigate("home") },
-             modifier = Modifier
-                 .fillMaxWidth()
-                 .height(50.dp),
-             shape = RoundedCornerShape(10.dp),
-             colors = ButtonDefaults.buttonColors(
-                 if (isFormValid) Color(0xFF27361F) else Color(0xFF989898)
-             ),
-             enabled = isFormValid
-         ) {
-             Text(
-                 text = "Daftar",
-                 fontFamily = PoppinsFontFamily,
-                 fontWeight = FontWeight.Bold,
-                 fontSize = 17.sp,
-                 color = Color.White,
-             )
-         }
+        Button(
 
-         Spacer(modifier = Modifier.height(16.dp))
+            onClick = {
 
-         Button(
-             onClick = { /* Handle Google Sign-Up */ },
-             modifier = Modifier
-                 .fillMaxWidth()
-                 .height(50.dp)
-                 .border(1.dp, Color.Black, RoundedCornerShape(10.dp)),
-             shape = RoundedCornerShape(10.dp),
-             colors = ButtonDefaults.buttonColors(Color.White)
-         ) {
-             Image(
-                 painter = painterResource(id = R.drawable.ic_google),
-                 contentDescription = "Google Icon",
-                 modifier = Modifier.size(20.dp)
-             )
-             Spacer(modifier = Modifier.width(8.dp))
-             Text(
-                 "Masuk dengan Google",
-                 color = Color.Black,
-                 fontFamily = PoppinsFontFamily,
-                 fontWeight = FontWeight.Bold
-             )
-         }
-     }
- }
+                navController.navigate("akun_berhasil")
+            },
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(50.dp),
+            shape = RoundedCornerShape(10.dp),
+            colors = ButtonDefaults.buttonColors(
+                if (isFormValid) Color(0xFF27361F) else Color(0xFF989898)
+            ),
+            enabled = isFormValid
+        ) {
+            Text(
+                text = "Daftar",
+                fontFamily = PoppinsFontFamily,
+                fontWeight = FontWeight.Bold,
+                fontSize = 17.sp,
+                color = Color.White,
+            )
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        Button(
+            onClick = { /* Handle Google Sign-Up */ },
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(50.dp)
+                .border(1.dp, Color.Black, RoundedCornerShape(10.dp)),
+            shape = RoundedCornerShape(10.dp),
+            colors = ButtonDefaults.buttonColors(Color.White)
+        ) {
+            Image(
+                painter = painterResource(id = R.drawable.ic_google),
+                contentDescription = "Google Icon",
+                modifier = Modifier.size(20.dp)
+            )
+            Spacer(modifier = Modifier.width(8.dp))
+            Text(
+                "Masuk dengan Google",
+                color = Color.Black,
+                fontFamily = PoppinsFontFamily,
+                fontWeight = FontWeight.Bold
+            )
+        }
+    }
+}
 
 @Preview
 @Composable
