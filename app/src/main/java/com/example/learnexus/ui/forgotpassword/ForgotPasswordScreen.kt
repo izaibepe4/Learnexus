@@ -37,7 +37,10 @@ import com.example.learnexus.R
 
 
 @Composable
-fun ForgotPasswordScreen(navController: NavController) { // <-- PERUBAHAN NAMA FUNGSI
+fun ForgotPasswordScreen(
+    navController: NavController,
+    returnRoute: String? = null
+) { // <-- PERUBAHAN NAMA FUNGSI
     var email by remember { mutableStateOf("") }
     var newPassword by remember { mutableStateOf("") }
     var confirmPassword by remember { mutableStateOf("") }
@@ -57,13 +60,23 @@ fun ForgotPasswordScreen(navController: NavController) { // <-- PERUBAHAN NAMA F
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         // Tombol kembali
+        val targetRoute = returnRoute ?: navController.previousBackStackEntry?.destination?.route
+
         Row(
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(top = 40.dp)
         ) {
-            IconButton(onClick = { navController.popBackStack() }) {
+            IconButton(
+                onClick = {
+                    if (!targetRoute.isNullOrEmpty()) {
+                        navController.popBackStack(targetRoute, inclusive = false)
+                    } else {
+                        navController.popBackStack()
+                    }
+                }
+            ) {
                 Image(
                     painter = painterResource(id = R.drawable.btn_back),
                     contentDescription = "Kembali",
