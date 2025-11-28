@@ -20,8 +20,8 @@ import com.example.learnexus.ui.theme.PoppinsFontFamily
 fun BottomNavigationBar(navController: NavController) {
     val items = listOf(
         BottomNavItem("Beranda", "home", R.drawable.ic_unhome, R.drawable.ic_home),
-        BottomNavItem("Kelas", "kelas", R.drawable.ic_unkelas, R.drawable.ic_kelas),
-        BottomNavItem("Leaderboard", "leaderboard", R.drawable.ic_unleaderboard, R.drawable.ic_leaderboard),
+        BottomNavItem("Kelas", "kelas", R.drawable.ic_unleaderboard, R.drawable.ic_leaderboard),
+        BottomNavItem("Sosial", "sosial", R.drawable.ic_unkelas, R.drawable.ic_kelas),
         BottomNavItem("Profil", "profile", R.drawable.ic_unprofil, R.drawable.ic_profile)
     )
 

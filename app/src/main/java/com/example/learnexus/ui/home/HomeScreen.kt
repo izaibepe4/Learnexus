@@ -113,7 +113,8 @@ fun HomeScreen(navController: NavController) {
             // LAYER 2: HEADER
             HomeHeader(
                 query = searchQuery,
-                onQueryChange = { searchQuery = it }
+                onQueryChange = { searchQuery = it },
+                onNotificationClick = { navController.navigate("notification") }
             )
         }
     }
@@ -125,7 +126,7 @@ private fun RecommendationCard(
     course: Course,
     onClick: () -> Unit
 ) {
-    // Warna dinamis
+
     val accentColor = getHomeCourseColor(course.id)
 
     Surface(
@@ -133,7 +134,6 @@ private fun RecommendationCard(
         tonalElevation = 2.dp,
         color = Color.White,
         modifier = Modifier
-            // UPDATE: Tinggi diubah jadi 165.dp agar teks tidak terpotong
             .size(width = 150.dp, height = 165.dp)
             .clickable { onClick() }
     ) {
@@ -141,7 +141,7 @@ private fun RecommendationCard(
             // Bagian Atas (Icon & Background Warna)
             Box(
                 modifier = Modifier
-                    // UPDATE: Tinggi header dikurangi sedikit jadi 75.dp agar proporsional
+
                     .width(150.dp).height(75.dp)
                     .clip(RoundedCornerShape(topStart = 10.dp, topEnd = 10.dp))
                     .background(accentColor.copy(alpha = 0.15f)),
@@ -194,7 +194,11 @@ private fun RecommendationCard(
 // --- KOMPONEN LAINNYA ---
 
 @Composable
-private fun HomeHeader(query: String, onQueryChange: (String) -> Unit) {
+private fun HomeHeader(
+    query: String,
+    onQueryChange: (String) -> Unit,
+    onNotificationClick: () -> Unit
+) {
     Box(modifier = Modifier.fillMaxWidth().height(140.dp)) {
         Surface(
             shadowElevation = 6.dp,
@@ -208,7 +212,7 @@ private fun HomeHeader(query: String, onQueryChange: (String) -> Unit) {
                 Column(modifier = Modifier.weight(1f).padding(top = 20.dp)) {
                     Text("Halo, User 👋", color = Color.Black, fontSize = 25.sp, fontFamily = PoppinsFontFamily, fontWeight = FontWeight.Bold)
                 }
-                IconButton(onClick = { /* TODO */ }, modifier = Modifier.padding(top = 20.dp)) {
+                IconButton(onClick = onNotificationClick, modifier = Modifier.padding(top = 20.dp)) {
                     Icon(Icons.Outlined.Notifications, "Notifikasi", tint = Color.Black, modifier = Modifier.size(28.dp))
                 }
             }
@@ -265,7 +269,7 @@ private fun ContinueLearningCard(course: Course, onClick: () -> Unit) {
                     // UPDATE: Tinggi text container 34.dp
                     modifier = Modifier.height(34.dp)
                 )
-                Spacer(modifier = Modifier.height(4.dp))
+                Spacer(modifier = Modifier.height(28.dp))
                 Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
                     val progressFraction = (randomProgress / 100f)
                     Box(modifier = Modifier.weight(1f).height(6.dp).clip(RoundedCornerShape(50)).background(Color.LightGray.copy(alpha = 0.5f))) {

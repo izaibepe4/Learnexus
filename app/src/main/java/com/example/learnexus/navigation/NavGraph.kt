@@ -9,7 +9,7 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.example.learnexus.ui.home.HomeScreen
 import com.example.learnexus.ui.kelas.ClassScreen
-import com.example.learnexus.ui.leaderboard.LeaderboardScreen
+import com.example.learnexus.ui.sosial.SocialScreen
 import com.example.learnexus.ui.forgotpassword.ForgotPasswordScreen
 import com.example.learnexus.ui.forgotpassword.ForgotPasswordSuccessScreen
 import com.example.learnexus.ui.kelas.ArticleScreen
@@ -17,6 +17,7 @@ import com.example.learnexus.ui.kelas.DetailCourseScreen
 import com.example.learnexus.ui.kelas.QuizScreen
 import com.example.learnexus.ui.kelas.VideoPlayerScreen
 import com.example.learnexus.ui.login.LoginScreen
+import com.example.learnexus.ui.notification.NotificationScreen
 import com.example.learnexus.ui.profil.AboutScreen
 import com.example.learnexus.ui.profil.EditProfileScreen
 import com.example.learnexus.ui.profil.HelpCenterScreen
@@ -51,8 +52,15 @@ fun AppNavigation() {
             ClassScreen(navController)
         }
 
-        composable("leaderboard") {
-            LeaderboardScreen(navController)
+        composable("sosial") {
+            SocialScreen(navController)
+        }
+
+        composable("notification") {
+            NotificationScreen(
+                userId = "demo-user",
+                onBackClick = { navController.popBackStack() }
+            )
         }
 
         composable("profile") {

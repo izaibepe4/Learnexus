@@ -34,7 +34,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -90,8 +89,6 @@ fun ProfileScreen(
             ProfileHeader(
                 name = uiState.name,
                 email = uiState.email,
-                followers = uiState.followers,
-                following = uiState.following,
                 onSettingsClick = { navController.navigate("settings") }
             )
             Spacer(modifier = Modifier.height(24.dp))
@@ -108,8 +105,7 @@ fun ProfileScreen(
             ) {
                 BadgeSection(
                     title = "Badge",
-                    badges = sampleBadges,
-                    onSeeAllClick = { /* TODO connect to badge list */ }
+                    badges = sampleBadges
                 )
             }
             Spacer(modifier = Modifier.height(24.dp))
@@ -123,8 +119,7 @@ fun ProfileScreen(
 private fun ProfileHeader(
     name: String,
     email: String,
-    followers: Int,
-    following: Int,
+
     onSettingsClick: () -> Unit
 ) {
     Card(
@@ -175,15 +170,6 @@ private fun ProfileHeader(
                     fontSize = 12.sp,
                     fontFamily = PoppinsFontFamily
                 )
-
-                Spacer(modifier = Modifier.height(16.dp))
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceEvenly
-                ) {
-                    ProfileStat(label = "Pengikut", value = followers)
-                    ProfileStat(label = "Mengikuti", value = following)
-                }
 
                 Spacer(modifier = Modifier.height(16.dp))
                 Button(
@@ -251,8 +237,7 @@ private fun ProfileStat(label: String, value: Int) {
 @Composable
 private fun BadgeSection(
     title: String,
-    badges: List<BadgeItem>,
-    onSeeAllClick: () -> Unit
+    badges: List<BadgeItem>
 ) {
     Column(modifier = Modifier.fillMaxWidth()) {
         Row(
@@ -267,15 +252,6 @@ private fun BadgeSection(
                 fontFamily = PoppinsFontFamily,
                 fontWeight = FontWeight.SemiBold,
             )
-            TextButton(onClick = onSeeAllClick) {
-                Text(
-                    text = "Lihat Semua",
-                    color = Color.White,
-                    fontFamily = PoppinsFontFamily,
-                    fontWeight = FontWeight.Medium,
-                    fontSize = 12.sp
-                )
-            }
         }
 
 
