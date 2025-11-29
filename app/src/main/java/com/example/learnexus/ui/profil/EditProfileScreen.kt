@@ -1,71 +1,67 @@
 package com.example.learnexus.ui.profil
 
+import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.filled.CameraAlt
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Divider
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.navigation.compose.rememberNavController
+import com.example.learnexus.data.api.RetrofitClient
+import com.example.learnexus.data.local.SessionManager
+import com.example.learnexus.data.model.UpdateProfileRequest
 import com.example.learnexus.ui.theme.PoppinsFontFamily
+import kotlinx.coroutines.launch
 
 @Composable
 fun EditProfileScreen(
-    navController: NavController,
-    profileViewModel: ProfileViewModel
+    navController: NavController
 ) {
-    var name by rememberSaveable { mutableStateOf(profileViewModel.uiState.name) }
-    val email = profileViewModel.uiState.email
+    val context = LocalContext.current
+    val scope = rememberCoroutineScope()
+
+    // Ambil data user saat ini dari Session Local
+    val currentUser = SessionManager.getUser(context)
+
+    // State untuk Form
+    var name by remember { mutableStateOf(currentUser?.name ?: "") }
+    val email = currentUser?.email ?: ""
+
+    var isLoading by remember { mutableStateOf(false) }
 
     Scaffold { innerPadding ->
         Column(
             modifier = Modifier
-            .padding(innerPadding)
-            .fillMaxSize()
-            .background(Color.White)
-            .padding(horizontal = 20.dp, vertical = 24.dp),
+                .padding(innerPadding)
+                .fillMaxSize()
+                .background(Color.White)
+                .padding(horizontal = 20.dp, vertical = 24.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             EditProfileHeader(onBackClick = { navController.popBackStack() })
+
             Spacer(modifier = Modifier.height(32.dp))
             AvatarSection()
             Spacer(modifier = Modifier.height(32.dp))
 
+            // EMAIL (Read Only)
             ProfileFieldLabel(text = "Email*", isRequired = true)
             Text(
                 text = email,
@@ -75,41 +71,76 @@ fun EditProfileScreen(
                 fontWeight = FontWeight.SemiBold,
                 modifier = Modifier.fillMaxWidth()
             )
-            Divider(color = Color(0xFFE0E0E0), thickness = 1.dp)
+            HorizontalDivider(color = Color(0xFFE0E0E0), thickness = 1.dp, modifier = Modifier.padding(vertical = 8.dp))
 
-            Spacer(modifier = Modifier.height(28.dp))
+            Spacer(modifier = Modifier.height(20.dp))
 
+            // NAMA (Editable)
             ProfileFieldLabel(text = "Nama")
             EditableNameField(
                 value = name,
                 onValueChange = { name = it }
             )
-            Divider(color = Color(0xFFE0E0E0), thickness = 1.dp)
+            HorizontalDivider(color = Color(0xFFE0E0E0), thickness = 1.dp, modifier = Modifier.padding(vertical = 8.dp))
 
             Spacer(modifier = Modifier.weight(1f))
 
+            // TOMBOL SIMPAN
             Button(
                 onClick = {
-                    profileViewModel.updateName(name.trim())
-                    navController.popBackStack()
+                    if (currentUser != null && name.isNotBlank()) {
+                        isLoading = true
+                        scope.launch {
+                            try {
+                                // 1. Panggil API Update
+                                val request = UpdateProfileRequest(name = name.trim())
+                                val response = RetrofitClient.instance.updateProfile(currentUser.id, request)
+
+                                isLoading = false
+
+                                if (response.success && response.user != null) {
+                                    // 2. Update Session Lokal
+                                    SessionManager.saveUser(context, response.user)
+
+                                    Toast.makeText(context, "Profil berhasil diperbarui!", Toast.LENGTH_SHORT).show()
+                                    navController.popBackStack() // Kembali ke halaman Profil
+                                } else {
+                                    Toast.makeText(context, "Gagal: ${response.message}", Toast.LENGTH_SHORT).show()
+                                }
+                            } catch (e: Exception) {
+                                isLoading = false
+                                e.printStackTrace()
+                                Toast.makeText(context, "Error: ${e.localizedMessage}", Toast.LENGTH_SHORT).show()
+                            }
+                        }
+                    } else {
+                        Toast.makeText(context, "Nama tidak boleh kosong", Toast.LENGTH_SHORT).show()
+                    }
                 },
                 shape = RoundedCornerShape(12.dp),
                 colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF1E2C1D)),
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(52.dp)
+                    .height(52.dp),
+                enabled = !isLoading
             ) {
-                Text(
-                    text = "Simpan",
-                    color = Color.White,
-                    fontFamily = PoppinsFontFamily,
-                    fontWeight = FontWeight.SemiBold,
-                    fontSize = 16.sp
-                )
+                if (isLoading) {
+                    CircularProgressIndicator(color = Color.White, modifier = Modifier.size(24.dp))
+                } else {
+                    Text(
+                        text = "Simpan",
+                        color = Color.White,
+                        fontFamily = PoppinsFontFamily,
+                        fontWeight = FontWeight.SemiBold,
+                        fontSize = 16.sp
+                    )
+                }
             }
         }
     }
 }
+
+// --- KOMPONEN UI BAWAH ---
 
 @Composable
 private fun EditProfileHeader(onBackClick: () -> Unit) {
@@ -126,7 +157,8 @@ private fun EditProfileHeader(onBackClick: () -> Unit) {
         ) {
             Icon(
                 imageVector = Icons.AutoMirrored.Outlined.ArrowBack,
-                contentDescription = "Kembali"
+                contentDescription = "Kembali",
+                tint = Color(0xFF1B1B1B)
             )
         }
         Spacer(modifier = Modifier.width(12.dp))
@@ -227,9 +259,5 @@ private fun EditableNameField(
 @Preview(showBackground = true)
 @Composable
 private fun EditProfileScreenPreview() {
-    EditProfileScreen(
-        navController = rememberNavController(),
-        profileViewModel = ProfileViewModel()
-    )
+    EditProfileScreen(navController = rememberNavController())
 }
-
