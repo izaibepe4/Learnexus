@@ -5,29 +5,11 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -43,19 +25,26 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
-import com.example.learnexus.ui.theme.PoppinsFontFamily
-import org.json.JSONObject
 import com.example.learnexus.R
-
+import com.example.learnexus.data.api.RetrofitClient
+import com.example.learnexus.data.local.SessionManager
+import com.example.learnexus.data.model.LoginRequest
+import com.example.learnexus.ui.theme.PoppinsFontFamily
+import kotlinx.coroutines.launch
 
 @Composable
 fun LoginScreen(navController: NavController) {
     val context = LocalContext.current
+    val scope = rememberCoroutineScope() // Scope untuk API Call
+
     var email by remember { mutableStateOf("") }
     var isEmailValid by remember { mutableStateOf(true) }
     var password by remember { mutableStateOf("") }
     var isPasswordValid by remember { mutableStateOf(true) }
     var passwordVisible by remember { mutableStateOf(false) }
+
+    // State Loading
+    var isLoading by remember { mutableStateOf(false) }
 
     Column(
         modifier = Modifier
@@ -113,14 +102,15 @@ fun LoginScreen(navController: NavController) {
                 .height(60.dp),
             shape = RoundedCornerShape(15.dp),
             singleLine = true,
+            isError = !isEmailValid
         )
 
         // Menampilkan warning jika Email tidak valid
         if (!isEmailValid) {
             Text(
-                text = "Email tidak boleh kosong dan harus mengandung @",
+                text = "Email tidak valid",
                 color = Color.Red,
-                fontSize = 14.sp,
+                fontSize = 12.sp,
                 fontFamily = PoppinsFontFamily,
                 modifier = Modifier
                     .padding(top = 4.dp)
@@ -158,7 +148,7 @@ fun LoginScreen(navController: NavController) {
                 IconButton(onClick = { passwordVisible = !passwordVisible }) {
                     Icon(
                         painter = painterResource(id = if (passwordVisible) R.drawable.ic_visibility else R.drawable.ic_visibility_off),
-                        contentDescription = if (passwordVisible) "Hide password" else "Show password",
+                        contentDescription = "Toggle password",
                         modifier = Modifier.size(20.dp)
                     )
                 }
@@ -167,15 +157,15 @@ fun LoginScreen(navController: NavController) {
                 .fillMaxWidth()
                 .height(60.dp),
             shape = RoundedCornerShape(15.dp),
-            singleLine = true
+            singleLine = true,
+            isError = !isPasswordValid
         )
 
-        // Menampilkan warning jika password kurang dari 8 karakter
         if (!isPasswordValid) {
             Text(
                 text = "Minimal 8 karakter",
                 color = Color.Red,
-                fontSize = 14.sp,
+                fontSize = 12.sp,
                 fontFamily = PoppinsFontFamily,
                 modifier = Modifier
                     .padding(top = 4.dp)
@@ -185,7 +175,6 @@ fun LoginScreen(navController: NavController) {
 
         Spacer(modifier = Modifier.height(13.dp))
 
-        // Forgot Password Text
         Text(
             "Lupa Sandi?",
             color = Color.Gray,
@@ -200,32 +189,65 @@ fun LoginScreen(navController: NavController) {
 
         Spacer(modifier = Modifier.height(34.dp))
 
-        // Login Button
+        // Login Button dengan API
+        val isButtonEnabled = email.isNotBlank() && isEmailValid && isPasswordValid && password.isNotBlank() && !isLoading
+
         Button(
             onClick = {
-                 Toast.makeText(context, "Login berhasil", Toast.LENGTH_SHORT).show()
-                // Navigate to home screen and clear the back stack
-                navController.navigate("home")
+                isLoading = true // Mulai Loading
+                scope.launch {
+                    try {
+                        val request = LoginRequest(email, password)
+                        // Panggil API Login
+                        val response = RetrofitClient.instance.login(request)
+
+                        isLoading = false // Stop Loading
+
+                        if (response.success && response.user != null) {
+                            // SIMPAN PERMANEN
+                            SessionManager.saveUser(context, response.user)
+
+                            Toast.makeText(context, "Login Berhasil!", Toast.LENGTH_SHORT).show()
+                            navController.navigate("home?userName=${response.user.name}") {
+                                popUpTo("login") { inclusive = true }
+                            }
+                        } else {
+                            // Pesan Error dari API (misal: "Password salah")
+                            Toast.makeText(context, response.message, Toast.LENGTH_LONG).show()
+                        }
+                    } catch (e: Exception) {
+                        isLoading = false
+                        e.printStackTrace()
+                        // Pesan Error Koneksi
+                        val errorMessage = if (e.message?.contains("401") == true) "Email atau Password Salah" else "Gagal terhubung ke server"
+                        Toast.makeText(context, errorMessage, Toast.LENGTH_LONG).show()
+                    }
+                }
             },
             modifier = Modifier
                 .fillMaxWidth()
-                .height(46.dp),
+                .height(50.dp),
             shape = RoundedCornerShape(10.dp),
             colors = ButtonDefaults.buttonColors(
-                if (email.isNotBlank() && isEmailValid && isPasswordValid && password.isNotBlank()) Color.Black else Color.Gray)
+                if (isButtonEnabled) Color.Black else Color.Gray
+            ),
+            enabled = isButtonEnabled
         ) {
-            Text(
-                "Masuk",
-                color = Color.White,
-                fontSize = 17.sp,
-                fontFamily = PoppinsFontFamily,
-                fontWeight = FontWeight.Bold
-            )
+            if (isLoading) {
+                CircularProgressIndicator(color = Color.White, modifier = Modifier.size(24.dp), strokeWidth = 2.dp)
+            } else {
+                Text(
+                    "Masuk",
+                    color = Color.White,
+                    fontSize = 17.sp,
+                    fontFamily = PoppinsFontFamily,
+                    fontWeight = FontWeight.Bold
+                )
+            }
         }
 
         Spacer(modifier = Modifier.height(30.dp))
 
-        // Divider
         Row(
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier.fillMaxWidth()
@@ -246,7 +268,6 @@ fun LoginScreen(navController: NavController) {
 
         Spacer(modifier = Modifier.height(18.dp))
 
-        // Google Sign-In Button
         Button(
             onClick = { /* Handle Google Sign-In */ },
             modifier = Modifier
@@ -272,7 +293,6 @@ fun LoginScreen(navController: NavController) {
 
         Spacer(modifier = Modifier.height(73.dp))
 
-        // Sign Up Text
         Row {
             Text(
                 "Belum punya akun? ",

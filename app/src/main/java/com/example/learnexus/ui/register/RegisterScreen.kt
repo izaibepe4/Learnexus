@@ -1,37 +1,20 @@
 package com.example.learnexus.ui.register
 
+import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Checkbox
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
@@ -45,15 +28,16 @@ import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.example.learnexus.R
+import com.example.learnexus.data.api.RetrofitClient
+import com.example.learnexus.data.model.RegisterRequest
 import com.example.learnexus.ui.theme.PoppinsFontFamily
+import kotlinx.coroutines.launch
 
 @Composable
 fun RegisterScreen(navController: NavController) {
-
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -64,11 +48,8 @@ fun RegisterScreen(navController: NavController) {
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             HeaderSection()
-
             Spacer(modifier = Modifier.height(47.dp))
-
             RegisterForm(navController)
-
             Spacer(modifier = Modifier.height(16.dp))
 
             // Sign Up Text
@@ -92,7 +73,6 @@ fun RegisterScreen(navController: NavController) {
                     }
                 )
             }
-
         }
     }
 }
@@ -108,8 +88,14 @@ fun HeaderSection() {
         contentScale = ContentScale.Crop
     )
 }
+
 @Composable
 fun RegisterForm(navController: NavController) {
+    // Context untuk Toast
+    val context = LocalContext.current
+    // Coroutine Scope untuk API Call
+    val scope = rememberCoroutineScope()
+
     var name by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
     var isEmailValid by remember { mutableStateOf(true) }
@@ -118,19 +104,21 @@ fun RegisterForm(navController: NavController) {
     var passwordVisible by remember { mutableStateOf(false) }
     var isChecked by remember { mutableStateOf(false) }
 
+    // State Loading
+    var isLoading by remember { mutableStateOf(false) }
+
     val annotatedString = buildAnnotatedString {
         append("Dengan melakukan login atau registrasi, Anda menyetujui ")
-
         withStyle(style = SpanStyle(fontWeight = FontWeight.Bold, fontFamily = PoppinsFontFamily)) {
             append("Syarat & Ketentuan")
         }
-
         append(" serta ")
-
         withStyle(style = SpanStyle(fontWeight = FontWeight.Bold, fontFamily = PoppinsFontFamily)) {
             append("Kebijakan Privasi")
         }
     }
+
+    // Validasi Form
     val isFormValid = name.isNotBlank() && email.isNotBlank() && isEmailValid && password.isNotBlank() && isPasswordValid && isChecked
 
     Column(modifier = Modifier.padding(16.dp)) {
@@ -146,7 +134,7 @@ fun RegisterForm(navController: NavController) {
 
         Spacer(modifier = Modifier.height(15.dp))
 
-        // nama pic
+        // INPUT NAMA
         OutlinedTextField(
             value = name,
             onValueChange = { name = it },
@@ -157,7 +145,8 @@ fun RegisterForm(navController: NavController) {
                     fontFamily = PoppinsFontFamily,
                     fontWeight = FontWeight.Normal,
                     fontSize = 14.sp,
-                ) },
+                )
+            },
             leadingIcon = {
                 Icon(
                     painter = painterResource(id = R.drawable.ic_person),
@@ -165,16 +154,14 @@ fun RegisterForm(navController: NavController) {
                     contentDescription = "Name Icon"
                 )
             },
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(55.dp),
+            modifier = Modifier.fillMaxWidth().height(55.dp),
             shape = RoundedCornerShape(15.dp),
             singleLine = true
         )
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // email pic (using same as company email)
+        // INPUT EMAIL
         OutlinedTextField(
             value = email,
             onValueChange = {
@@ -197,28 +184,25 @@ fun RegisterForm(navController: NavController) {
                     contentDescription = "Email Icon"
                 )
             },
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(60.dp),
+            modifier = Modifier.fillMaxWidth().height(60.dp),
             shape = RoundedCornerShape(15.dp),
             singleLine = true,
+            isError = !isEmailValid
         )
 
         if (!isEmailValid) {
             Text(
-                text = "Email tidak boleh kosong dan harus mengandung @",
+                text = "Email tidak valid",
                 color = Color.Red,
-                fontSize = 14.sp,
+                fontSize = 12.sp,
                 fontFamily = PoppinsFontFamily,
-                modifier = Modifier
-                    .padding(top = 4.dp)
-                    .align(Alignment.Start)
+                modifier = Modifier.padding(start = 4.dp, top = 2.dp)
             )
         }
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // password pic
+        // INPUT PASSWORD
         OutlinedTextField(
             value = password,
             onValueChange = {
@@ -246,28 +230,24 @@ fun RegisterForm(navController: NavController) {
                 IconButton(onClick = { passwordVisible = !passwordVisible }) {
                     Icon(
                         painter = painterResource(id = if (passwordVisible) R.drawable.ic_visibility else R.drawable.ic_visibility_off),
-                        contentDescription = if (passwordVisible) "Hide password" else "Show password",
+                        contentDescription = "Toggle password",
                         modifier = Modifier.size(20.dp)
                     )
                 }
             },
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(60.dp),
+            modifier = Modifier.fillMaxWidth().height(60.dp),
             shape = RoundedCornerShape(15.dp),
-            singleLine = true
+            singleLine = true,
+            isError = !isPasswordValid
         )
 
-        // Menampilkan warning jika password kurang dari 8 karakter
         if (!isPasswordValid) {
             Text(
                 text = "Minimal 8 karakter",
                 color = Color.Red,
-                fontSize = 14.sp,
+                fontSize = 12.sp,
                 fontFamily = PoppinsFontFamily,
-                modifier = Modifier
-                    .padding(top = 4.dp)
-                    .align(Alignment.Start)
+                modifier = Modifier.padding(start = 4.dp, top = 2.dp)
             )
         }
 
@@ -289,11 +269,32 @@ fun RegisterForm(navController: NavController) {
 
         Spacer(modifier = Modifier.height(16.dp))
 
+        // TOMBOL DAFTAR DENGAN INTEGRASI API
         Button(
-
             onClick = {
+                isLoading = true // Mulai Loading
+                scope.launch {
+                    try {
+                        // 1. Panggil API Register
+                        val request = RegisterRequest(name, email, password)
+                        val response = RetrofitClient.instance.register(request)
 
-                navController.navigate("akun_berhasil")
+                        isLoading = false // Stop Loading
+
+                        // 2. Cek Hasil
+                        if (response.success) {
+                            Toast.makeText(context, "Registrasi Berhasil!", Toast.LENGTH_SHORT).show()
+                            // Pindah ke halaman Sukses atau Login
+                            navController.navigate("akun_berhasil")
+                        } else {
+                            Toast.makeText(context, response.message, Toast.LENGTH_LONG).show()
+                        }
+                    } catch (e: Exception) {
+                        isLoading = false
+                        e.printStackTrace()
+                        Toast.makeText(context, "Gagal terhubung: ${e.message}", Toast.LENGTH_LONG).show()
+                    }
+                }
             },
             modifier = Modifier
                 .fillMaxWidth()
@@ -302,19 +303,28 @@ fun RegisterForm(navController: NavController) {
             colors = ButtonDefaults.buttonColors(
                 if (isFormValid) Color(0xFF27361F) else Color(0xFF989898)
             ),
-            enabled = isFormValid
+            enabled = isFormValid && !isLoading // Matikan tombol jika loading
         ) {
-            Text(
-                text = "Daftar",
-                fontFamily = PoppinsFontFamily,
-                fontWeight = FontWeight.Bold,
-                fontSize = 17.sp,
-                color = Color.White,
-            )
+            if (isLoading) {
+                CircularProgressIndicator(
+                    color = Color.White,
+                    modifier = Modifier.size(24.dp),
+                    strokeWidth = 2.dp
+                )
+            } else {
+                Text(
+                    text = "Daftar",
+                    fontFamily = PoppinsFontFamily,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 17.sp,
+                    color = Color.White,
+                )
+            }
         }
 
         Spacer(modifier = Modifier.height(16.dp))
 
+        // TOMBOL GOOGLE (Dummy)
         Button(
             onClick = { /* Handle Google Sign-Up */ },
             modifier = Modifier

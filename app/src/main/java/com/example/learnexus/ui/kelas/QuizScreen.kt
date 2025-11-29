@@ -15,26 +15,28 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
-import com.example.learnexus.data.DummyData
+import com.example.learnexus.data.api.RetrofitClient // Import Client API
+import com.example.learnexus.data.local.SessionManager
+import com.example.learnexus.data.local.UserProgressStore
 import com.example.learnexus.data.model.ContentType
+import com.example.learnexus.data.model.Module // Import Model Module
+import com.example.learnexus.data.model.ProgressRequest
 import com.example.learnexus.data.model.QuizContent
 import com.example.learnexus.ui.theme.PoppinsFontFamily
+import kotlinx.coroutines.launch
 
 @Composable
 fun QuizScreen(navController: NavController, moduleId: String?) {
-    val module = DummyData.courses.flatMap { it.modules }.find { it.id.toString() == moduleId }
-
-    if (module == null || module.type != ContentType.QUIZ) {
-        Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { Text("Kuis Error") }
-        return
-    }
-
-    val quizData = module.content as QuizContent
+    val context = LocalContext.current // 1. Ambil Context
+    // 1. STATE DATA API
+    var module by remember { mutableStateOf<Module?>(null) }
+    var isLoading by remember { mutableStateOf(true) }
 
     // STATE UNTUK LOGIKA KUIS
     var currentQuestionIndex by remember { mutableStateOf(0) }
@@ -42,135 +44,212 @@ fun QuizScreen(navController: NavController, moduleId: String?) {
     var score by remember { mutableStateOf(0) }
     var isQuizFinished by remember { mutableStateOf(false) }
 
-    val currentQuestion = quizData.questions[currentQuestionIndex]
-
-    Scaffold(
-        containerColor = Color.White,
-        topBar = {
-            if (!isQuizFinished) {
-                Row(
-                    modifier = Modifier.fillMaxWidth().padding(top = 40.dp, start = 16.dp, end = 16.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.SpaceBetween
-                ) {
-                    IconButton(onClick = { navController.popBackStack() }) {
-                        Icon(Icons.Filled.Close, contentDescription = "Quit")
-                    }
-                    Text(
-                        text = "${currentQuestionIndex + 1}/${quizData.questions.size}",
-                        fontFamily = PoppinsFontFamily,
-                        fontWeight = FontWeight.Bold
-                    )
+    // 2. FETCH DATA DARI API
+    val scope = rememberCoroutineScope()
+    LaunchedEffect(moduleId) {
+        if (moduleId != null) {
+            scope.launch {
+                try {
+                    // Panggil API untuk detail modul (soal kuis ada di dalamnya)
+                    module = RetrofitClient.instance.getModuleDetail(moduleId)
+                    isLoading = false
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                    isLoading = false
                 }
             }
         }
-    ) { innerPadding ->
-        Column(modifier = Modifier.padding(innerPadding).padding(24.dp).fillMaxSize()) {
+    }
 
-            if (isQuizFinished) {
-                // --- HASIL AKHIR ---
-                Column(
-                    modifier = Modifier.fillMaxSize(),
-                    verticalArrangement = Arrangement.Center,
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    Text("🎉", fontSize = 60.sp)
-                    Spacer(modifier = Modifier.height(16.dp))
-                    Text(
-                        text = "Kuis Selesai!",
-                        fontSize = 24.sp,
-                        fontWeight = FontWeight.Bold,
-                        fontFamily = PoppinsFontFamily
-                    )
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Text(
-                        text = "Skor Kamu: $score / ${quizData.questions.size}",
-                        fontSize = 18.sp,
-                        fontFamily = PoppinsFontFamily,
-                        color = if (score > quizData.questions.size / 2) Color(0xFF1F3C2E) else Color.Red
-                    )
-                    Spacer(modifier = Modifier.height(32.dp))
-                    Button(
-                        onClick = { navController.popBackStack() },
-                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF1F3C2E)),
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Text("Kembali ke Modul", fontFamily = PoppinsFontFamily)
-                    }
-                }
-            } else {
-                // --- TAMPILAN PERTANYAAN ---
-                LinearProgressIndicator(
-                    progress = (currentQuestionIndex + 1) / quizData.questions.size.toFloat(),
-                    modifier = Modifier.fillMaxWidth().height(8.dp).clip(RoundedCornerShape(4.dp)),
-                    color = Color(0xFF1F3C2E)
-                )
+    // 3. LOGIKA TAMPILAN
+    if (isLoading) {
+        Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+            CircularProgressIndicator(color = Color(0xFF1F3C2E))
+        }
+    } else if (module == null || module?.type != ContentType.QUIZ) {
+        Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+            Text("Kuis tidak ditemukan atau gagal dimuat")
+        }
+    } else {
+        // Data Berhasil Dimuat
+        val quizData = module!!.content as QuizContent
 
-                Spacer(modifier = Modifier.height(32.dp))
+        // Pastikan ada soalnya, kalau kosong tampilkan pesan error
+        if (quizData.questions.isEmpty()) {
+            Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                Text("Belum ada soal untuk kuis ini")
+            }
+            return
+        }
 
-                Text(
-                    text = currentQuestion.text,
-                    fontSize = 20.sp,
-                    fontWeight = FontWeight.Bold,
-                    fontFamily = PoppinsFontFamily,
-                    color = Color.Black
-                )
+        val currentQuestion = quizData.questions[currentQuestionIndex]
 
-                Spacer(modifier = Modifier.height(24.dp))
-
-                // List Pilihan Jawaban
-                currentQuestion.options.forEachIndexed { index, optionText ->
-                    val isSelected = selectedAnswerIndex == index
-                    val containerColor = if (isSelected) Color(0xFF1F3C2E) else Color.White
-                    val contentColor = if (isSelected) Color.White else Color.Black
-                    val borderColor = if (isSelected) Color(0xFF1F3C2E) else Color(0xFFE0E0E0)
-
-                    Card(
-                        shape = RoundedCornerShape(12.dp),
-                        colors = CardDefaults.cardColors(containerColor = containerColor),
+        Scaffold(
+            containerColor = Color.White,
+            topBar = {
+                if (!isQuizFinished) {
+                    Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(vertical = 6.dp)
-                            .border(1.dp, borderColor, RoundedCornerShape(12.dp))
-                            .clickable { selectedAnswerIndex = index }
+                            .padding(top = 40.dp, start = 16.dp, end = 16.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween
                     ) {
+                        IconButton(onClick = { navController.popBackStack() }) {
+                            Icon(Icons.Filled.Close, contentDescription = "Quit")
+                        }
                         Text(
-                            text = optionText,
-                            modifier = Modifier.padding(16.dp),
+                            text = "${currentQuestionIndex + 1}/${quizData.questions.size}",
                             fontFamily = PoppinsFontFamily,
-                            color = contentColor
+                            fontWeight = FontWeight.Bold
                         )
                     }
                 }
+            }
+        ) { innerPadding ->
+            Column(
+                modifier = Modifier
+                    .padding(innerPadding)
+                    .padding(24.dp)
+                    .fillMaxSize()
+            ) {
 
-                Spacer(modifier = Modifier.weight(1f))
-
-                // Tombol Lanjut
-                Button(
-                    onClick = {
-                        if (selectedAnswerIndex != null) {
-                            // Cek Jawaban Benar
-                            if (selectedAnswerIndex == currentQuestion.correctAnswerIndex) {
-                                score++
-                            }
-                            // Pindah Soal
-                            if (currentQuestionIndex < quizData.questions.size - 1) {
-                                currentQuestionIndex++
-                                selectedAnswerIndex = null
-                            } else {
-                                isQuizFinished = true
-                            }
+                if (isQuizFinished) {
+                    // --- HASIL AKHIR ---
+                    Column(
+                        modifier = Modifier.fillMaxSize(),
+                        verticalArrangement = Arrangement.Center,
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Text("🎉", fontSize = 60.sp)
+                        Spacer(modifier = Modifier.height(16.dp))
+                        Text(
+                            text = "Kuis Selesai!",
+                            fontSize = 24.sp,
+                            fontWeight = FontWeight.Bold,
+                            fontFamily = PoppinsFontFamily
+                        )
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Text(
+                            text = "Skor Kamu: $score / ${quizData.questions.size}",
+                            fontSize = 18.sp,
+                            fontFamily = PoppinsFontFamily,
+                            color = if (score > quizData.questions.size / 2) Color(0xFF1F3C2E) else Color.Red
+                        )
+                        Spacer(modifier = Modifier.height(32.dp))
+                        Button(
+                            onClick = { navController.popBackStack() },
+                            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF1F3C2E)),
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Text("Kembali ke Modul", fontFamily = PoppinsFontFamily)
                         }
-                    },
-                    enabled = selectedAnswerIndex != null, // Matikan jika belum pilih
-                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF1F3C2E)),
-                    modifier = Modifier.fillMaxWidth().height(50.dp)
-                ) {
-                    Text(
-                        text = if (currentQuestionIndex == quizData.questions.size - 1) "Selesai" else "Lanjut",
-                        fontFamily = PoppinsFontFamily,
-                        fontWeight = FontWeight.Bold
+                    }
+                } else {
+                    // --- TAMPILAN PERTANYAAN ---
+                    LinearProgressIndicator(
+                        progress = { (currentQuestionIndex + 1) / quizData.questions.size.toFloat() },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(8.dp)
+                            .clip(RoundedCornerShape(4.dp)),
+                        color = Color(0xFF1F3C2E),
+                        trackColor = Color(0xFFE0E0E0),
                     )
+
+                    Spacer(modifier = Modifier.height(32.dp))
+
+                    Text(
+                        text = currentQuestion.text,
+                        fontSize = 20.sp,
+                        fontWeight = FontWeight.Bold,
+                        fontFamily = PoppinsFontFamily,
+                        color = Color.Black
+                    )
+
+                    Spacer(modifier = Modifier.height(24.dp))
+
+                    // List Pilihan Jawaban
+                    currentQuestion.options.forEachIndexed { index, optionText ->
+                        val isSelected = selectedAnswerIndex == index
+                        val containerColor = if (isSelected) Color(0xFF1F3C2E) else Color.White
+                        val contentColor = if (isSelected) Color.White else Color.Black
+                        val borderColor = if (isSelected) Color(0xFF1F3C2E) else Color(0xFFE0E0E0)
+
+                        Card(
+                            shape = RoundedCornerShape(12.dp),
+                            colors = CardDefaults.cardColors(containerColor = containerColor),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(vertical = 6.dp)
+                                .border(1.dp, borderColor, RoundedCornerShape(12.dp))
+                                .clickable { selectedAnswerIndex = index }
+                        ) {
+                            Text(
+                                text = optionText,
+                                modifier = Modifier.padding(16.dp),
+                                fontFamily = PoppinsFontFamily,
+                                color = contentColor
+                            )
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.weight(1f))
+
+                    Button(
+                        onClick = {
+                            if (selectedAnswerIndex != null) {
+                                // 1. Cek Jawaban Benar (Hitung Skor)
+                                if (selectedAnswerIndex == currentQuestion.correctAnswerIndex) {
+                                    score++
+                                }
+
+                                // 2. Logika Pindah Soal atau Selesai
+                                if (currentQuestionIndex < quizData.questions.size - 1) {
+                                    // Masih ada soal berikutnya -> Pindah index
+                                    currentQuestionIndex++
+                                    selectedAnswerIndex = null
+                                } else {
+                                    // Pindah Soal
+                                    if (currentQuestionIndex < quizData.questions.size - 1) {
+                                        currentQuestionIndex++
+                                        selectedAnswerIndex = null
+                                    } else {
+                                        isQuizFinished = true
+
+                                        val user = SessionManager.getUser(context)
+
+                                        if (user != null && module != null) {
+                                            scope.launch {
+                                                try {
+                                                    val req = ProgressRequest(
+                                                        user_id = user.id,
+                                                        course_id = module!!.courseId,
+                                                        module_id = module!!.id
+                                                    )
+                                                    RetrofitClient.instance.updateProgress(req)
+                                                    UserProgressStore.markAsCompleted(module!!.id)
+                                                } catch (e: Exception) {
+                                                    e.printStackTrace()
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        },
+                        enabled = selectedAnswerIndex != null, // Matikan jika belum pilih
+                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF1F3C2E)),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(50.dp)
+                    ) {
+                        Text(
+                            text = if (currentQuestionIndex == quizData.questions.size - 1) "Selesai" else "Lanjut",
+                            fontFamily = PoppinsFontFamily,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
                 }
             }
         }
